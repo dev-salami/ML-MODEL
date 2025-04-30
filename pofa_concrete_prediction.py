@@ -301,60 +301,7 @@ plt.tight_layout()
 plt.savefig('model_comparison.png')
 plt.close()
 
-# 8. Create a prediction function for new data
-# def predict_strength(model, scaler, cement, pofa, ca_fa, w_b, sp, age):
-#     """
-#     Predict concrete compressive strength using the trained model.
-    
-#     Parameters:
-#     -----------
-#     model: The trained ML model
-#     scaler: The feature scaler
-#     cement: Cement content (kg/m³)
-#     pofa: Palm Oil Fuel Ash content (kg/m³)
-#     ca_fa: Coarse Aggregate to Fine Aggregate ratio
-#     w_b: Water to Binder ratio
-#     sp: Superplasticizer content (kg/m³)
-#     age: Age of concrete (days)
-    
-#     Returns:
-#     --------
-#     float: Predicted compressive strength (MPa)
-#     """
-#     # Create input data
-#     input_data = np.array([[cement, pofa, ca_fa, w_b, sp, age]])
-    
-#     # Scale the input data
-#     scaled_input = scaler.transform(input_data)
-    
-#     # Make prediction
-#     prediction = model.predict(scaled_input)
-    
-#     return prediction[0]
-
-# # Example prediction
-# new_concrete = {
-#     'cement': 400,
-#     'pofa': 100,
-#     'ca_fa': 1.30,
-#     'w_b': 0.35,
-#     'sp': 5.0,
-#     'age': 28
-# }
-
-# predicted_strength = predict_strength(
-#     tuned_model, scaler,
-#     new_concrete['cement'],
-#     new_concrete['pofa'],
-#     new_concrete['ca_fa'],
-#     new_concrete['w_b'],
-#     new_concrete['sp'],
-#     new_concrete['age']
-# )
-
-# print(f"\nPredicted Compressive Strength for New Concrete: {predicted_strength:.2f} MPa")
-
-def predict_strength(model, scaler, cement, pofa, ca_fa, w_b, sp, age, additional_feature=0):
+def predict_strength(model, scaler, cement, pofa, ca_fa, w_b, sp, age, concrete_strength=0):
     """
     Predict concrete compressive strength using the trained model.
     
@@ -368,14 +315,14 @@ def predict_strength(model, scaler, cement, pofa, ca_fa, w_b, sp, age, additiona
     w_b: Water to Binder ratio
     sp: Superplasticizer content (kg/m³)
     age: Age of concrete (days)
-    additional_feature: Value for the 7th feature in your dataset (modify name as needed)
+    concrete_strength: Value for the 7th feature in your dataset (modify name as needed)
     
     Returns:
     --------
     float: Predicted compressive strength (MPa)
     """
     # Create input data with all 7 features
-    input_data = np.array([[cement, pofa, ca_fa, w_b, sp, age, additional_feature]])
+    input_data = np.array([[cement, pofa, ca_fa, w_b, sp, age, concrete_strength]])
     
     # Scale the input data
     scaled_input = scaler.transform(input_data)
@@ -393,7 +340,7 @@ new_concrete = {
     'w_b': 0.35,
     'sp': 5.0,
     'age': 90,
-    'additional_feature': 0  # Replace with appropriate value or parameter name
+    'concrete_strength': 0  # Replace with appropriate value or parameter name
 }
 
 # Call the function with all parameters
@@ -405,7 +352,7 @@ predicted_strength = predict_strength(
     new_concrete['w_b'],
     new_concrete['sp'],
     new_concrete['age'],
-    new_concrete['additional_feature']  # Include the 7th feature
+    new_concrete['concrete_strength']  
 )
 
 print(f"\nPredicted Compressive Strength for New Concrete: {predicted_strength:.2f} MPa")
