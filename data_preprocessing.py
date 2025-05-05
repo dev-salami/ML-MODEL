@@ -84,8 +84,8 @@ def preprocess_data(df):
     X.columns: Feature names
     """
     # Separate features and target
-    X = df.drop('CS', axis=1)
-    y = df['CS']
+    X = df.drop('CS', axis=1)  # Features (6 features, excluding CS)
+    y = df['CS']               # Target variable
     
     # Split data into training and testing sets
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -94,6 +94,12 @@ def preprocess_data(df):
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
+    
+    # Print information about the scaling for debugging
+    n_features = scaler.n_features_in_ if hasattr(scaler, 'n_features_in_') else "Unknown"
+    print(f"Scaler was trained with {n_features} features")
+    if hasattr(scaler, 'feature_names_in_'):
+        print(f"Feature names: {scaler.feature_names_in_}")
     
     return X_train_scaled, X_test_scaled, y_train, y_test, scaler, X.columns
 

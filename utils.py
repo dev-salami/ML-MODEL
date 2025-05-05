@@ -65,7 +65,7 @@ def predict_strength(model, scaler, cement, pofa, ca_fa, w_b, sp, age):
     if n_features and n_features == 7:
         # The scaler was trained with 7 features (including concrete_strength as a dummy)
         # Add a dummy value (0) for the concrete_strength parameter
-        input_data = np.array([[cement, pofa, ca_fa, w_b, sp, age, 0]])
+        input_data = np.array([[cement, pofa, ca_fa, w_b, sp, age, 25]])
     else:
         # Standard case with 6 features
         input_data = np.array([[cement, pofa, ca_fa, w_b, sp, age]])
