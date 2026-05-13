@@ -13,6 +13,7 @@ OUTPUT_DIRS = {
     'correlation':         os.path.join(BASE_OUT, 'correlation'),
     'training_loss':       os.path.join(BASE_OUT, 'training_loss'),
     'misc':                os.path.join(BASE_OUT, 'misc'),
+    'optuna':              os.path.join(BASE_OUT, 'optuna'),
     'models':              os.path.join(BASE_OUT, 'models'),
 }
 
@@ -29,6 +30,7 @@ def get_output_dirs(version='v1'):
         'correlation':         os.path.join(base, 'correlation'),
         'training_loss':       os.path.join(base, 'training_loss'),
         'misc':                os.path.join(base, 'misc'),
+        'optuna':              os.path.join(base, 'optuna'),
         'models':              os.path.join(base, 'models'),
     }
 

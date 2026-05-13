@@ -60,7 +60,7 @@ def save_actual_vs_predicted(y_test, y_pred, model_key, dirs):
     ax.set_xlabel('Actual Strength (MPa)')
     ax.set_ylabel('Predicted Strength (MPa)')
     ax.grid(True, alpha=0.3)
-    ax.legend()
+    ax.legend(loc='lower right')
     plt.tight_layout()
 
     out = os.path.join(dirs['actual_vs_predicted'], f'{model_key}_actual_vs_predicted.png')
@@ -89,7 +89,7 @@ def save_feature_importance_chart(importances, feature_names, model_key, dirs):
 
 
 def save_optuna_history(study, model_key, dirs):
-    os.makedirs(dirs['misc'], exist_ok=True)
+    os.makedirs(dirs['optuna'], exist_ok=True)
 
     try:
         import optuna.visualization.matplotlib as optuna_mpl
@@ -106,7 +106,7 @@ def save_optuna_history(study, model_key, dirs):
         ax.grid(True, alpha=0.3)
         plt.tight_layout()
 
-    out = os.path.join(dirs['misc'], f'optuna_{model_key}.png')
+    out = os.path.join(dirs['optuna'], f'optuna_{model_key}.png')
     fig.savefig(out, dpi=150)
     plt.close(fig)
     print(f"  Chart: {out}")
@@ -160,6 +160,7 @@ def run_model(model_key, X_train, y_train, X_test, y_test, feature_names,
         'mae':         mae,
         'target_met':  target_met,
         'best_params': best_params,
+        'y_pred':      np.asarray(y_pred),
     }
 
 
@@ -237,9 +238,28 @@ def main():
                 'mae':        float('nan'),
                 'target_met': False,
                 'best_params': {},
+                'y_pred':     None,
             })
 
     print_summary_table(results, args.target)
+
+    # ---- Diagnostics: violin plot + Taylor diagram ----
+    from generate_diagnostics import plot_violin, plot_taylor
+
+    predictions = {
+        r['name']: r['y_pred']
+        for r in results
+        if r.get('y_pred') is not None and not np.isnan(r['r2'])
+    }
+    if predictions:
+        print("\nGenerating diagnostic plots...")
+        os.makedirs(dirs['misc'], exist_ok=True)
+        plot_violin(predictions, np.asarray(y_test),
+                    os.path.join(dirs['misc'], 'violin_plot.png'))
+        plot_taylor(predictions, np.asarray(y_test),
+                    os.path.join(dirs['misc'], 'taylor_diagram.png'))
+    else:
+        print("\nNo successful models — skipping diagnostic plots.")
 
 
 if __name__ == '__main__':

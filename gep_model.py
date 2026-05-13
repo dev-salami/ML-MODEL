@@ -299,7 +299,7 @@ def evaluate_gep_individual(individual, pset, X, y):
         return (1e6,)
 
 def train_gep(X_train, y_train, X_test, y_test, feature_names,
-              pop_size=300, n_gen=50, cxpb=0.7, mutpb=0.3):
+              pop_size=300, n_gen=50, cxpb=0.7, mutpb=0.3, plot=True):
     """
     Train a GEP-like model using genetic programming.
 
@@ -313,6 +313,8 @@ def train_gep(X_train, y_train, X_test, y_test, feature_names,
         n_gen: Number of generations
         cxpb: Crossover probability
         mutpb: Mutation probability
+        plot: If True, save built-in actual-vs-predicted and fitness-evolution
+              plots to OUTPUT_DIRS (v1). Set False to suppress side-effect plots.
 
     Returns:
         Best individual, evaluation results, and compiled function
@@ -409,43 +411,44 @@ def train_gep(X_train, y_train, X_test, y_test, feature_names,
     print(f"Mean Absolute Error (MAE): {mae:.4f}")
     print(f"R² Score: {r2:.4f}")
     
-    # Plot actual vs predicted
-    plt.figure(figsize=(10, 6))
-    plt.scatter(y_test, y_pred, alpha=0.7, edgecolors='k')
-    
-    # Add perfect prediction line
-    min_val = min(min(y_test), min(y_pred))
-    max_val = max(max(y_test), max(y_pred))
-    plt.plot([min_val, max_val], [min_val, max_val], 'r--', lw=2)
-    
-    plt.title('GEP Model: Actual vs Predicted Compressive Strength')
-    plt.xlabel('Actual Strength (MPa)')
-    plt.ylabel('Predicted Strength (MPa)')
-    plt.grid(True, alpha=0.3)
+    if plot:
+        # Plot actual vs predicted
+        plt.figure(figsize=(10, 6))
+        plt.scatter(y_test, y_pred, alpha=0.7, edgecolors='k')
 
-    # Add R² annotation
-    plt.annotate(f'R² = {r2:.4f}', xy=(0.05, 0.95), xycoords='axes fraction',
-                bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5))
+        # Add perfect prediction line
+        min_val = min(min(y_test), min(y_pred))
+        max_val = max(max(y_test), max(y_pred))
+        plt.plot([min_val, max_val], [min_val, max_val], 'r--', lw=2)
 
-    plt.tight_layout()
-    os.makedirs(OUTPUT_DIRS['actual_vs_predicted'], exist_ok=True)
-    plt.savefig(os.path.join(OUTPUT_DIRS['actual_vs_predicted'], 'gep_actual_vs_predicted.png'))
-    plt.close()
+        plt.title('GEP Model: Actual vs Predicted Compressive Strength')
+        plt.xlabel('Actual Strength (MPa)')
+        plt.ylabel('Predicted Strength (MPa)')
+        plt.grid(True, alpha=0.3)
 
-    # Plot fitness evolution
-    gen = range(n_gen + 1)
-    fit_mins = log.chapters['fitness'].select('min')
-    
-    plt.figure(figsize=(10, 6))
-    plt.plot(gen, fit_mins, 'b-')
-    plt.title('GEP Training Evolution')
-    plt.xlabel('Generation')
-    plt.ylabel('Fitness (MSE)')
-    plt.grid(True, alpha=0.3)
-    plt.tight_layout()
-    os.makedirs(OUTPUT_DIRS['misc'], exist_ok=True)
-    plt.savefig(os.path.join(OUTPUT_DIRS['misc'], 'gep_fitness_evolution.png'))
-    plt.close()
+        # Add R² annotation
+        plt.annotate(f'R² = {r2:.4f}', xy=(0.05, 0.95), xycoords='axes fraction',
+                    bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5))
+
+        plt.tight_layout()
+        os.makedirs(OUTPUT_DIRS['actual_vs_predicted'], exist_ok=True)
+        plt.savefig(os.path.join(OUTPUT_DIRS['actual_vs_predicted'], 'gep_actual_vs_predicted.png'))
+        plt.close()
+
+        # Plot fitness evolution
+        gen = range(n_gen + 1)
+        fit_mins = log.chapters['fitness'].select('min')
+
+        plt.figure(figsize=(10, 6))
+        plt.plot(gen, fit_mins, 'b-')
+        plt.title('GEP Training Evolution')
+        plt.xlabel('Generation')
+        plt.ylabel('Fitness (MSE)')
+        plt.grid(True, alpha=0.3)
+        plt.tight_layout()
+        os.makedirs(OUTPUT_DIRS['misc'], exist_ok=True)
+        plt.savefig(os.path.join(OUTPUT_DIRS['misc'], 'gep_fitness_evolution.png'))
+        plt.close()
     
     # Convert the best individual to a sympy expression for readability
     try:

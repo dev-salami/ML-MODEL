@@ -226,7 +226,8 @@ def tune_gep(X_train, y_train, X_test, y_test, feature_names,
     _, _, final = train_gep(
         X_train, y_train, X_test, y_test, feature_names,
         pop_size=bp['pop_size'], n_gen=bp['n_gen'],
-        cxpb=bp['cxpb'], mutpb=bp['mutpb']
+        cxpb=bp['cxpb'], mutpb=bp['mutpb'],
+        plot=False,
     )
     y_pred = final.predict(X_test)
     return final, bp, r2_score(y_test, y_pred), y_pred, study
@@ -330,8 +331,17 @@ def get_feature_importance(model_key, model, X_val, y_val, feature_names):
     feature_names = list(feature_names)
     n = len(feature_names)
 
-    if model_key in ('rf', 'gb', 'm5p'):
+    if model_key in ('rf', 'gb'):
         imp = model.feature_importances_
+
+    elif model_key == 'm5p':
+        # M5PModel wraps a DecisionTreeRegressor in self.tree
+        if hasattr(model, 'tree') and hasattr(model.tree, 'feature_importances_'):
+            imp = model.tree.feature_importances_
+        else:
+            result = permutation_importance(model, X_val, y_val,
+                                            n_repeats=10, random_state=42)
+            imp = np.clip(result.importances_mean, 0, None)
 
     elif model_key == 'bagging':
         imps = [
