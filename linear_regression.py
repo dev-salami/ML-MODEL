@@ -3,7 +3,8 @@ from sklearn.linear_model import LinearRegression
 import joblib
 
 from data_preprocessing import load_and_explore_data, preprocess_data
-from utils import evaluate_model, predict_strength, save_model
+import os
+from utils import evaluate_model, predict_strength, save_model, OUTPUT_DIRS
 
 def train_linear_regression(X_train, y_train, X_test, y_test):
     """
@@ -40,7 +41,7 @@ def main():
     )
     
     # Save the model
-    save_model(lr_model, 'linear_regression_model.pkl')
+    save_model(lr_model, os.path.join(OUTPUT_DIRS['models'], 'linear_regression_model.pkl'))
     
     # Example prediction
     new_concrete = {

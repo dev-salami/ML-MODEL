@@ -3,12 +3,14 @@ Artificial Neural Network (ANN) model for POFA concrete strength prediction usin
 This is a fallback implementation that doesn't require TensorFlow.
 """
 
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.neural_network import MLPRegressor
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 from sklearn.model_selection import GridSearchCV
 import joblib
+from utils import OUTPUT_DIRS
 
 def create_ann_sklearn(random_state=42):
     """
@@ -89,7 +91,8 @@ def train_ann_sklearn(X_train_scaled, y_train, X_test_scaled, y_test):
         plt.ylabel('Loss')
         plt.grid(True, alpha=0.3)
         plt.tight_layout()
-        plt.savefig('ann_sklearn_training_loss.png')
+        os.makedirs(OUTPUT_DIRS['training_loss'], exist_ok=True)
+        plt.savefig(os.path.join(OUTPUT_DIRS['training_loss'], 'ann_sklearn_training_loss.png'))
         plt.close()
     
     # Plot actual vs predicted
@@ -111,7 +114,8 @@ def train_ann_sklearn(X_train_scaled, y_train, X_test_scaled, y_test):
                 bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5))
     
     plt.tight_layout()
-    plt.savefig('ann_sklearn_actual_vs_predicted.png')
+    os.makedirs(OUTPUT_DIRS['actual_vs_predicted'], exist_ok=True)
+    plt.savefig(os.path.join(OUTPUT_DIRS['actual_vs_predicted'], 'ann_sklearn_actual_vs_predicted.png'))
     plt.close()
     
     return model, {'mse': mse, 'rmse': rmse, 'mae': mae, 'r2': r2}
@@ -202,7 +206,8 @@ def tune_ann_sklearn(X_train_scaled, y_train, X_test_scaled, y_test):
         plt.ylabel('Loss')
         plt.grid(True, alpha=0.3)
         plt.tight_layout()
-        plt.savefig('tuned_ann_sklearn_training_loss.png')
+        os.makedirs(OUTPUT_DIRS['training_loss'], exist_ok=True)
+        plt.savefig(os.path.join(OUTPUT_DIRS['training_loss'], 'tuned_ann_sklearn_training_loss.png'))
         plt.close()
     
     # Plot actual vs predicted
@@ -224,7 +229,8 @@ def tune_ann_sklearn(X_train_scaled, y_train, X_test_scaled, y_test):
                 bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5))
     
     plt.tight_layout()
-    plt.savefig('tuned_ann_sklearn_actual_vs_predicted.png')
+    os.makedirs(OUTPUT_DIRS['actual_vs_predicted'], exist_ok=True)
+    plt.savefig(os.path.join(OUTPUT_DIRS['actual_vs_predicted'], 'tuned_ann_sklearn_actual_vs_predicted.png'))
     plt.close()
     
     return best_model, {'mse': mse, 'rmse': rmse, 'mae': mae, 'r2': r2}

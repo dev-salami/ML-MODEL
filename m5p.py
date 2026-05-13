@@ -3,6 +3,7 @@ M5P Model Tree implementation for POFA concrete strength prediction.
 This module implements M5P model trees which combine decision trees with linear regression models at the leaves.
 """
 
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.base import BaseEstimator, RegressorMixin
@@ -11,6 +12,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 from sklearn.model_selection import GridSearchCV
 import warnings
+from utils import OUTPUT_DIRS
 
 # Filter warnings
 warnings.filterwarnings("ignore")
@@ -223,7 +225,8 @@ def train_m5p_model(X_train, y_train, X_test, y_test):
                 bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5))
     
     plt.tight_layout()
-    plt.savefig('m5p_actual_vs_predicted.png')
+    os.makedirs(OUTPUT_DIRS['actual_vs_predicted'], exist_ok=True)
+    plt.savefig(os.path.join(OUTPUT_DIRS['actual_vs_predicted'], 'm5p_actual_vs_predicted.png'))
     plt.close()
     
     # Return model and metrics
@@ -323,7 +326,8 @@ def tune_m5p_model(X_train, y_train, X_test, y_test):
                 bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5))
     
     plt.tight_layout()
-    plt.savefig('tuned_m5p_actual_vs_predicted.png')
+    os.makedirs(OUTPUT_DIRS['actual_vs_predicted'], exist_ok=True)
+    plt.savefig(os.path.join(OUTPUT_DIRS['actual_vs_predicted'], 'tuned_m5p_actual_vs_predicted.png'))
     plt.close()
     
     # Return tuned model and metrics
@@ -363,7 +367,8 @@ def feature_importance_m5p(model, feature_names=None):
     plt.xticks(range(len(importances)), sorted_feature_names, rotation=45, ha='right')
     plt.title('M5P Model Feature Importance')
     plt.tight_layout()
-    plt.savefig('m5p_feature_importance.png')
+    os.makedirs(OUTPUT_DIRS['feature_importance'], exist_ok=True)
+    plt.savefig(os.path.join(OUTPUT_DIRS['feature_importance'], 'm5p_feature_importance.png'))
     plt.close()
 
 

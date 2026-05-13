@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 import joblib
@@ -6,7 +7,7 @@ from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, S
 from sklearn.svm import SVR
 
 from data_preprocessing import load_and_explore_data, preprocess_data
-from utils import evaluate_model, predict_strength
+from utils import evaluate_model, predict_strength, OUTPUT_DIRS
 
 # Import individual model modules
 import linear_regression
@@ -67,7 +68,8 @@ def compare_all_models():
     plt.title('Model Comparison - R² Score')
     plt.xticks(rotation=45)
     plt.tight_layout()
-    plt.savefig('model_comparison.png')
+    os.makedirs(OUTPUT_DIRS['misc'], exist_ok=True)
+    plt.savefig(os.path.join(OUTPUT_DIRS['misc'], 'model_comparison.png'))
     plt.close()
     
     # Find the best model

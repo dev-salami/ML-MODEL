@@ -2,6 +2,7 @@
 Bagging algorithm implementation for POFA concrete strength prediction.
 """
 
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.ensemble import BaggingRegressor
@@ -10,6 +11,7 @@ from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 from sklearn.model_selection import GridSearchCV
 import joblib
 import sklearn
+from utils import OUTPUT_DIRS
 
 def create_bagging_regressor(base_estimator, **kwargs):
     """
@@ -91,7 +93,8 @@ def train_bagging(X_train_scaled, y_train, X_test_scaled, y_test):
                 bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5))
     
     plt.tight_layout()
-    plt.savefig('bagging_actual_vs_predicted.png')
+    os.makedirs(OUTPUT_DIRS['actual_vs_predicted'], exist_ok=True)
+    plt.savefig(os.path.join(OUTPUT_DIRS['actual_vs_predicted'], 'bagging_actual_vs_predicted.png'))
     plt.close()
     
     return bagging_model, {'mse': mse, 'rmse': rmse, 'mae': mae, 'r2': r2}
@@ -180,7 +183,8 @@ def tune_bagging(X_train_scaled, y_train, X_test_scaled, y_test):
                 bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5))
     
     plt.tight_layout()
-    plt.savefig('tuned_bagging_actual_vs_predicted.png')
+    os.makedirs(OUTPUT_DIRS['actual_vs_predicted'], exist_ok=True)
+    plt.savefig(os.path.join(OUTPUT_DIRS['actual_vs_predicted'], 'tuned_bagging_actual_vs_predicted.png'))
     plt.close()
     
     return best_model, {'mse': mse, 'rmse': rmse, 'mae': mae, 'r2': r2}
@@ -227,7 +231,8 @@ def feature_importance_bagging(model, feature_names):
             plt.xlabel('Average Feature Importance')
             plt.title('Bagging Model: Feature Importance')
             plt.tight_layout()
-            plt.savefig('bagging_feature_importance.png')
+            os.makedirs(OUTPUT_DIRS['feature_importance'], exist_ok=True)
+            plt.savefig(os.path.join(OUTPUT_DIRS['feature_importance'], 'bagging_feature_importance.png'))
             plt.close()
             
             print("\nBagging Model Feature Importances:")

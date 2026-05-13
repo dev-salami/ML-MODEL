@@ -1,13 +1,14 @@
+import os
 import pandas as pd
 import numpy as np
 import joblib
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error, r2_score
 
-from utils import predict_strength
+from utils import predict_strength, OUTPUT_DIRS
 
-def verify_predictions(model_file='random_forest_model_tuned.pkl', 
-                     scaler_file='pofa_concrete_strength_scaler.pkl',
+def verify_predictions(model_file=None,
+                     scaler_file=None,
                      data_file='pofa_concrete_data.csv',
                      sample_count=10):
     """
@@ -20,6 +21,11 @@ def verify_predictions(model_file='random_forest_model_tuned.pkl',
     data_file: Path to the CSV data file
     sample_count: Number of samples to check
     """
+    if model_file is None:
+        model_file = os.path.join(OUTPUT_DIRS['models'], 'random_forest_model_tuned.pkl')
+    if scaler_file is None:
+        scaler_file = os.path.join(OUTPUT_DIRS['models'], 'pofa_concrete_strength_scaler.pkl')
+
     try:
         # Load model and scaler
         model = joblib.load(model_file)
@@ -101,7 +107,8 @@ def verify_predictions(model_file='random_forest_model_tuned.pkl',
         plt.title('Actual vs Predicted Compressive Strength')
         plt.grid(True)
         plt.tight_layout()
-        plt.savefig('prediction_verification.png')
+        os.makedirs(OUTPUT_DIRS['misc'], exist_ok=True)
+        plt.savefig(os.path.join(OUTPUT_DIRS['misc'], 'prediction_verification.png'))
         plt.close()
         
         # Return results for further analysis

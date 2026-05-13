@@ -3,11 +3,13 @@ MARS (Multivariate Adaptive Regression Splines) model for POFA concrete strength
 This module implements MARS which automatically models non-linearities and interactions between variables.
 """
 
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 from sklearn.model_selection import GridSearchCV
 import warnings
+from utils import OUTPUT_DIRS
 
 # Filter warnings
 warnings.filterwarnings("ignore")
@@ -96,7 +98,8 @@ def train_mars_model(X_train, y_train, X_test, y_test, feature_names=None):
                 bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5))
     
     plt.tight_layout()
-    plt.savefig('mars_actual_vs_predicted.png')
+    os.makedirs(OUTPUT_DIRS['actual_vs_predicted'], exist_ok=True)
+    plt.savefig(os.path.join(OUTPUT_DIRS['actual_vs_predicted'], 'mars_actual_vs_predicted.png'))
     plt.close()
     
     # Plot coefficients
@@ -112,7 +115,8 @@ def train_mars_model(X_train, y_train, X_test, y_test, feature_names=None):
         plt.xlabel('Basis Function')
         plt.ylabel('Coefficient Value')
         plt.tight_layout()
-        plt.savefig('mars_coefficients.png')
+        os.makedirs(OUTPUT_DIRS['misc'], exist_ok=True)
+        plt.savefig(os.path.join(OUTPUT_DIRS['misc'], 'mars_coefficients.png'))
         plt.close()
         
         # Plot feature importance if available
@@ -236,7 +240,8 @@ def tune_mars_model(X_train, y_train, X_test, y_test, feature_names=None):
                 bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5))
     
     plt.tight_layout()
-    plt.savefig('tuned_mars_actual_vs_predicted.png')
+    os.makedirs(OUTPUT_DIRS['actual_vs_predicted'], exist_ok=True)
+    plt.savefig(os.path.join(OUTPUT_DIRS['actual_vs_predicted'], 'tuned_mars_actual_vs_predicted.png'))
     plt.close()
     
     # Plot feature importance if available
@@ -283,7 +288,8 @@ def plot_mars_feature_importance(model, feature_names=None):
         plt.xticks(range(len(sorted_importances)), sorted_feature_names, rotation=45, ha='right')
         plt.title('MARS Model Feature Importance')
         plt.tight_layout()
-        plt.savefig('mars_feature_importance.png')
+        os.makedirs(OUTPUT_DIRS['feature_importance'], exist_ok=True)
+        plt.savefig(os.path.join(OUTPUT_DIRS['feature_importance'], 'mars_feature_importance.png'))
         plt.close()
         
     except Exception as e:
@@ -363,4 +369,5 @@ def plot_mars_hinge_functions(model, X, feature_names=None, num_points=1000):
             axes[i].grid(True, alpha=0.3)
         
         plt.tight_layout()
-        plt.savefig('mars_hinge_functions`)
+        os.makedirs(OUTPUT_DIRS['misc'], exist_ok=True)
+        plt.savefig(os.path.join(OUTPUT_DIRS['misc'], 'mars_hinge_functions.png'))

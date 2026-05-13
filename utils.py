@@ -1,7 +1,36 @@
+import os
 import numpy as np
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 import matplotlib.pyplot as plt
 import joblib
+
+BASE_OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'out', 'v1')
+
+OUTPUT_DIRS = {
+    'actual_vs_predicted': os.path.join(BASE_OUT, 'actual_vs_predicted'),
+    'shap':                os.path.join(BASE_OUT, 'shap'),
+    'feature_importance':  os.path.join(BASE_OUT, 'feature_importance'),
+    'correlation':         os.path.join(BASE_OUT, 'correlation'),
+    'training_loss':       os.path.join(BASE_OUT, 'training_loss'),
+    'misc':                os.path.join(BASE_OUT, 'misc'),
+    'models':              os.path.join(BASE_OUT, 'models'),
+}
+
+def ensure_output_dirs():
+    for path in OUTPUT_DIRS.values():
+        os.makedirs(path, exist_ok=True)
+
+def get_output_dirs(version='v1'):
+    base = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'out', version)
+    return {
+        'actual_vs_predicted': os.path.join(base, 'actual_vs_predicted'),
+        'shap':                os.path.join(base, 'shap'),
+        'feature_importance':  os.path.join(base, 'feature_importance'),
+        'correlation':         os.path.join(base, 'correlation'),
+        'training_loss':       os.path.join(base, 'training_loss'),
+        'misc':                os.path.join(base, 'misc'),
+        'models':              os.path.join(base, 'models'),
+    }
 
 def evaluate_model(model, X_train, X_test, y_train, y_test, model_name):
     """
@@ -96,18 +125,22 @@ def plot_model_comparison(model_results):
     plt.title('Model Comparison - R² Score')
     plt.xticks(rotation=45)
     plt.tight_layout()
-    plt.savefig('model_comparison.png')
+    os.makedirs(OUTPUT_DIRS['misc'], exist_ok=True)
+    plt.savefig(os.path.join(OUTPUT_DIRS['misc'], 'model_comparison.png'))
     plt.close()
     
 def save_model(model, filename):
     """
     Save a trained model to disk.
-    
+
     Parameters:
     -----------
     model: Trained model to save
     filename: Name of the file to save the model to
     """
+    dirname = os.path.dirname(filename)
+    if dirname:
+        os.makedirs(dirname, exist_ok=True)
     joblib.dump(model, filename)
     print(f"Model saved to {filename}")
 

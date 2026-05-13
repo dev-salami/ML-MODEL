@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -7,6 +8,7 @@ from sklearn.preprocessing import StandardScaler
 import joblib
 import warnings
 warnings.filterwarnings('ignore')
+from utils import OUTPUT_DIRS
 
 def load_and_explore_data(file_path='pofa_concrete_data.csv'):
     """
@@ -40,7 +42,8 @@ def load_and_explore_data(file_path='pofa_concrete_data.csv'):
         plt.hist(df[column], bins=20)
         plt.title(column)
     plt.tight_layout()
-    plt.savefig('feature_histograms.png')
+    os.makedirs(OUTPUT_DIRS['misc'], exist_ok=True)
+    plt.savefig(os.path.join(OUTPUT_DIRS['misc'], 'feature_histograms.png'))
     plt.close()
     
     # Correlation matrix
@@ -48,7 +51,8 @@ def load_and_explore_data(file_path='pofa_concrete_data.csv'):
     correlation_matrix = df.corr()
     sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm')
     plt.title('Correlation Matrix')
-    plt.savefig('correlation_matrix.png')
+    os.makedirs(OUTPUT_DIRS['correlation'], exist_ok=True)
+    plt.savefig(os.path.join(OUTPUT_DIRS['correlation'], 'correlation_matrix.png'))
     plt.close()
     
     # Scatter plots for important relationships
@@ -61,7 +65,8 @@ def load_and_explore_data(file_path='pofa_concrete_data.csv'):
         plt.ylabel('Compressive Strength (CS)')
         plt.title(f'{feature} vs CS')
     plt.tight_layout()
-    plt.savefig('feature_vs_cs.png')
+    os.makedirs(OUTPUT_DIRS['correlation'], exist_ok=True)
+    plt.savefig(os.path.join(OUTPUT_DIRS['correlation'], 'feature_vs_cs.png'))
     plt.close()
     
     return df
@@ -111,6 +116,7 @@ if __name__ == "__main__":
     X_train_scaled, X_test_scaled, y_train, y_test, scaler, feature_names = preprocess_data(df)
     
     # Save the scaler for future use
-    joblib.dump(scaler, 'pofa_concrete_strength_scaler.pkl')
+    os.makedirs(OUTPUT_DIRS['models'], exist_ok=True)
+    joblib.dump(scaler, os.path.join(OUTPUT_DIRS['models'], 'pofa_concrete_strength_scaler.pkl'))
     
     print("Data preprocessing completed and scaler saved.")

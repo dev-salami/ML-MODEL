@@ -10,6 +10,7 @@ import seaborn as sns
 from scipy.stats import pearsonr
 import joblib
 import os
+from utils import OUTPUT_DIRS
 
 def plot_correlation_matrix(models_predictions, actual, model_names):
     """
@@ -54,7 +55,8 @@ def plot_correlation_matrix(models_predictions, actual, model_names):
     
     plt.title('Pearson Correlation Matrix: Actual vs Predicted Values', fontsize=16)
     plt.tight_layout()
-    plt.savefig('correlation_matrix.png', dpi=300)
+    os.makedirs(OUTPUT_DIRS['correlation'], exist_ok=True)
+    plt.savefig(os.path.join(OUTPUT_DIRS['correlation'], 'correlation_matrix.png'), dpi=300)
     plt.close()
     
     return corr_matrix
@@ -112,7 +114,8 @@ def plot_individual_correlations(models_predictions, actual, model_names):
         )
     
     plt.tight_layout()
-    plt.savefig('individual_correlations.png', dpi=300)
+    os.makedirs(OUTPUT_DIRS['correlation'], exist_ok=True)
+    plt.savefig(os.path.join(OUTPUT_DIRS['correlation'], 'individual_correlations.png'), dpi=300)
     plt.close()
     
     return correlation_results
@@ -178,14 +181,15 @@ def generate_correlation_analysis(X_test, y_test, scaler, feature_names):
     model_names = []
     
     # List of all possible model files
+    _md = OUTPUT_DIRS['models']
     model_files = [
-        ('Linear Regression', 'linear_regression_model.pkl'),
-        ('Random Forest', 'random_forest_model_tuned.pkl'),
-        ('Gradient Boosting', 'gradient_boosting_model_tuned.pkl'),
-        ('SVR', 'svr_model_tuned.pkl'),
-        ('Hybrid', 'hybrid_model.pkl'),
-        ('Bagging', 'bagging_model_tuned.pkl'),
-        ('GEP', 'gep_model.pkl')
+        ('Linear Regression', os.path.join(_md, 'linear_regression_model.pkl')),
+        ('Random Forest',     os.path.join(_md, 'random_forest_model_tuned.pkl')),
+        ('Gradient Boosting', os.path.join(_md, 'gradient_boosting_model_tuned.pkl')),
+        ('SVR',               os.path.join(_md, 'svr_model_tuned.pkl')),
+        ('Hybrid',            os.path.join(_md, 'hybrid_model.pkl')),
+        ('Bagging',           os.path.join(_md, 'bagging_model_tuned.pkl')),
+        ('GEP',               os.path.join(_md, 'gep_model.pkl')),
     ]
     
     # Load each available model and get predictions
@@ -288,7 +292,8 @@ def generate_correlation_analysis(X_test, y_test, scaler, feature_names):
     
     plt.legend(loc='lower right')
     plt.tight_layout()
-    plt.savefig('best_model_correlation.png', dpi=300)
+    os.makedirs(OUTPUT_DIRS['correlation'], exist_ok=True)
+    plt.savefig(os.path.join(OUTPUT_DIRS['correlation'], 'best_model_correlation.png'), dpi=300)
     plt.close()
     
     print(f"\nBest performing model based on Pearson correlation: {best_model} (r = {corr:.4f})")

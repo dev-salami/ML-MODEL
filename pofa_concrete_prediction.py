@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -13,6 +14,7 @@ import shap
 from sklearn.pipeline import Pipeline
 import warnings
 warnings.filterwarnings('ignore')
+from utils import OUTPUT_DIRS
 
 # Read the data
 # For now let's manually create the dataframe from the provided table
@@ -65,7 +67,8 @@ for i, column in enumerate(df.columns):
     plt.hist(df[column], bins=20)
     plt.title(column)
 plt.tight_layout()
-plt.savefig('feature_histograms.png')
+os.makedirs(OUTPUT_DIRS['misc'], exist_ok=True)
+plt.savefig(os.path.join(OUTPUT_DIRS['misc'], 'feature_histograms.png'))
 plt.close()
 
 # Correlation matrix
@@ -73,7 +76,8 @@ plt.figure(figsize=(10, 8))
 correlation_matrix = df.corr()
 sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm')
 plt.title('Correlation Matrix')
-plt.savefig('correlation_matrix.png')
+os.makedirs(OUTPUT_DIRS['correlation'], exist_ok=True)
+plt.savefig(os.path.join(OUTPUT_DIRS['correlation'], 'correlation_matrix.png'))
 plt.close()
 
 # Scatter plots for important relationships
@@ -86,7 +90,8 @@ for i, feature in enumerate(features):
     plt.ylabel('Compressive Strength (CS)')
     plt.title(f'{feature} vs CS')
 plt.tight_layout()
-plt.savefig('feature_vs_cs.png')
+os.makedirs(OUTPUT_DIRS['correlation'], exist_ok=True)
+plt.savefig(os.path.join(OUTPUT_DIRS['correlation'], 'feature_vs_cs.png'))
 plt.close()
 
 # 2. Data Preprocessing
@@ -225,7 +230,7 @@ print(f"MAE: {mae_tuned:.4f}")
 #     shap.summary_plot(shap_values, X_test, feature_names=X.columns, show=False)
 #     plt.title('SHAP Summary Plot')
 #     plt.tight_layout()
-#     plt.savefig('shap_summary.png')
+#     plt.savefig(os.path.join(OUTPUT_DIRS['shap'], 'shap_summary.png'))
 #     plt.close()
     
 #     # Feature importance based on SHAP
@@ -238,7 +243,7 @@ print(f"MAE: {mae_tuned:.4f}")
 #     sns.barplot(x='SHAP Importance', y='Feature', data=feature_importance)
 #     plt.title('Feature Importance based on SHAP Values')
 #     plt.tight_layout()
-#     plt.savefig('shap_feature_importance.png')
+#     plt.savefig(os.path.join(OUTPUT_DIRS['shap'], 'shap_feature_importance.png'))
 #     plt.close()
     
 #     # Individual SHAP value plots for top 3 features
@@ -248,7 +253,7 @@ print(f"MAE: {mae_tuned:.4f}")
 #         shap.dependence_plot(feature_idx, shap_values, X_test, feature_names=X.columns, show=False)
 #         plt.title(f'SHAP Dependence Plot for {feature}')
 #         plt.tight_layout()
-#         plt.savefig(f'shap_dependence_{feature}.png')
+#         plt.savefig(os.path.join(OUTPUT_DIRS['shap'], f'shap_dependence_{feature}.png'))
 #         plt.close()
 
 # 6. Advanced Hybrid Model (Optional)
@@ -298,7 +303,8 @@ plt.ylabel('R² Score')
 plt.title('Model Comparison - R² Score')
 plt.xticks(rotation=45)
 plt.tight_layout()
-plt.savefig('model_comparison.png')
+os.makedirs(OUTPUT_DIRS['misc'], exist_ok=True)
+plt.savefig(os.path.join(OUTPUT_DIRS['misc'], 'model_comparison.png'))
 plt.close()
 
 def predict_strength(model, scaler, cement, pofa, ca_fa, w_b, sp, age, concrete_strength=0):
@@ -361,7 +367,7 @@ print(f"\nPredicted Compressive Strength for New Concrete: {predicted_strength:.
 def identify_missing_feature():
     # Load the saved scaler (if available)
     try:
-        loaded_scaler = joblib.load('pofa_concrete_strength_scaler.pkl')
+        loaded_scaler = joblib.load(os.path.join(OUTPUT_DIRS['models'], 'pofa_concrete_strength_scaler.pkl'))
         # Print feature names if available (scikit-learn 1.0+)
         if hasattr(loaded_scaler, 'feature_names_in_'):
             print("Scaler was trained on these features:", loaded_scaler.feature_names_in_)
@@ -385,8 +391,9 @@ def identify_missing_feature():
 import joblib
 
 # Save the model
-joblib.dump(tuned_model, 'pofa_concrete_strength_model.pkl')
+os.makedirs(OUTPUT_DIRS['models'], exist_ok=True)
+joblib.dump(tuned_model, os.path.join(OUTPUT_DIRS['models'], 'pofa_concrete_strength_model.pkl'))
 # Save the scaler
-joblib.dump(scaler, 'pofa_concrete_strength_scaler.pkl')
+joblib.dump(scaler, os.path.join(OUTPUT_DIRS['models'], 'pofa_concrete_strength_scaler.pkl'))
 
 print("\nModel and scaler saved successfully.")

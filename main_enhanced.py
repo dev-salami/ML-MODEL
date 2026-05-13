@@ -18,7 +18,7 @@ np.random.seed(42)
 
 # Import modules
 from data_preprocessing import load_and_explore_data, preprocess_data
-from utils import predict_strength
+from utils import predict_strength, OUTPUT_DIRS
 
 # Import individual model modules
 import linear_regression
@@ -75,13 +75,14 @@ def train_model(model_type, data_file):
     X_train_scaled, X_test_scaled, y_train, y_test, scaler, feature_names = preprocess_data(df)
     
     # Save the scaler for future use
-    joblib.dump(scaler, 'pofa_concrete_strength_scaler.pkl')
+    os.makedirs(OUTPUT_DIRS['models'], exist_ok=True)
+    joblib.dump(scaler, os.path.join(OUTPUT_DIRS['models'], os.path.join(OUTPUT_DIRS['models'], 'pofa_concrete_strength_scaler.pkl')))
     
     if model_type == 'linear':
         model, _ = linear_regression.train_linear_regression(
             X_train_scaled, y_train, X_test_scaled, y_test
         )
-        joblib.dump(model, 'linear_regression_model.pkl')
+        joblib.dump(model, os.path.join(OUTPUT_DIRS['models'], 'linear_regression_model.pkl'))
         return model, scaler
         
     elif model_type == 'rf':
@@ -91,7 +92,7 @@ def train_model(model_type, data_file):
         tuned_model, _ = random_forest.tune_random_forest(
             X_train_scaled, y_train, X_test_scaled, y_test
         )
-        joblib.dump(tuned_model, 'random_forest_model_tuned.pkl')
+        joblib.dump(tuned_model, os.path.join(OUTPUT_DIRS['models'], 'random_forest_model_tuned.pkl'))
         return tuned_model, scaler
         
     elif model_type == 'gb':
@@ -101,7 +102,7 @@ def train_model(model_type, data_file):
         tuned_model, _ = gradient_boosting.tune_gradient_boosting(
             X_train_scaled, y_train, X_test_scaled, y_test
         )
-        joblib.dump(tuned_model, 'gradient_boosting_model_tuned.pkl')
+        joblib.dump(tuned_model, os.path.join(OUTPUT_DIRS['models'], 'gradient_boosting_model_tuned.pkl'))
         return tuned_model, scaler
         
     elif model_type == 'svr':
@@ -111,14 +112,14 @@ def train_model(model_type, data_file):
         tuned_model, _ = svr.tune_svr(
             X_train_scaled, y_train, X_test_scaled, y_test
         )
-        joblib.dump(tuned_model, 'svr_model_tuned.pkl')
+        joblib.dump(tuned_model, os.path.join(OUTPUT_DIRS['models'], 'svr_model_tuned.pkl'))
         return tuned_model, scaler
         
     elif model_type == 'hybrid':
         model, _ = hybrid_model.train_hybrid_model(
             X_train_scaled, y_train, X_test_scaled, y_test
         )
-        joblib.dump(model, 'hybrid_model.pkl')
+        joblib.dump(model, os.path.join(OUTPUT_DIRS['models'], 'hybrid_model.pkl'))
         return model, scaler
     
     elif model_type == 'bagging':
@@ -128,7 +129,7 @@ def train_model(model_type, data_file):
         tuned_model, _ = bagging_algorithm.tune_bagging(
             X_train_scaled, y_train, X_test_scaled, y_test
         )
-        joblib.dump(tuned_model, 'bagging_model_tuned.pkl')
+        joblib.dump(tuned_model, os.path.join(OUTPUT_DIRS['models'], 'bagging_model_tuned.pkl'))
         # Feature importance with error handling
         print(f"Number of features: {len(feature_names)}")
         print(f"Feature names: {feature_names}")
@@ -149,7 +150,7 @@ def train_model(model_type, data_file):
         joblib.dump({
             'results': tuned_results,
             'model': tuned_func  # This is now a GEPModel instance that can be pickled
-        }, 'gep_model.pkl')
+        }, os.path.join(OUTPUT_DIRS['models'], 'gep_model.pkl'))
         return tuned_func, scaler
         
     elif model_type == 'all':
@@ -159,7 +160,7 @@ def train_model(model_type, data_file):
         linear_model, _ = linear_regression.train_linear_regression(
             X_train_scaled, y_train, X_test_scaled, y_test
         )
-        joblib.dump(linear_model, 'linear_regression_model.pkl')
+        joblib.dump(linear_model, os.path.join(OUTPUT_DIRS['models'], 'linear_regression_model.pkl'))
         
         rf_model, _ = random_forest.train_random_forest(
             X_train_scaled, y_train, X_test_scaled, y_test
@@ -167,7 +168,7 @@ def train_model(model_type, data_file):
         tuned_rf_model, _ = random_forest.tune_random_forest(
             X_train_scaled, y_train, X_test_scaled, y_test
         )
-        joblib.dump(tuned_rf_model, 'random_forest_model_tuned.pkl')
+        joblib.dump(tuned_rf_model, os.path.join(OUTPUT_DIRS['models'], 'random_forest_model_tuned.pkl'))
         
         gb_model, _ = gradient_boosting.train_gradient_boosting(
             X_train_scaled, y_train, X_test_scaled, y_test
@@ -175,7 +176,7 @@ def train_model(model_type, data_file):
         tuned_gb_model, _ = gradient_boosting.tune_gradient_boosting(
             X_train_scaled, y_train, X_test_scaled, y_test
         )
-        joblib.dump(tuned_gb_model, 'gradient_boosting_model_tuned.pkl')
+        joblib.dump(tuned_gb_model, os.path.join(OUTPUT_DIRS['models'], 'gradient_boosting_model_tuned.pkl'))
         
         svr_model, _ = svr.train_svr(
             X_train_scaled, y_train, X_test_scaled, y_test
@@ -183,12 +184,12 @@ def train_model(model_type, data_file):
         tuned_svr_model, _ = svr.tune_svr(
             X_train_scaled, y_train, X_test_scaled, y_test
         )
-        joblib.dump(tuned_svr_model, 'svr_model_tuned.pkl')
+        joblib.dump(tuned_svr_model, os.path.join(OUTPUT_DIRS['models'], 'svr_model_tuned.pkl'))
         
         hybrid_model_trained, _ = hybrid_model.train_hybrid_model(
             X_train_scaled, y_train, X_test_scaled, y_test
         )
-        joblib.dump(hybrid_model_trained, 'hybrid_model.pkl')
+        joblib.dump(hybrid_model_trained, os.path.join(OUTPUT_DIRS['models'], 'hybrid_model.pkl'))
         
         # New models
         bagging_model, _ = bagging_algorithm.train_bagging(
@@ -197,7 +198,7 @@ def train_model(model_type, data_file):
         tuned_bagging_model, _ = bagging_algorithm.tune_bagging(
             X_train_scaled, y_train, X_test_scaled, y_test
         )
-        joblib.dump(tuned_bagging_model, 'bagging_model_tuned.pkl')
+        joblib.dump(tuned_bagging_model, os.path.join(OUTPUT_DIRS['models'], 'bagging_model_tuned.pkl'))
         try:
             bagging_algorithm.feature_importance_bagging(tuned_bagging_model, feature_names)
         except Exception as e:
@@ -210,7 +211,7 @@ def train_model(model_type, data_file):
         joblib.dump({
             'results': results,
             'model': best_func  # This is now a GEPModel instance
-        }, 'gep_model.pkl')
+        }, os.path.join(OUTPUT_DIRS['models'], 'gep_model.pkl'))
         
         # Run correlation analysis
         correlation_analysis.generate_correlation_analysis(
@@ -229,12 +230,12 @@ def train_model(model_type, data_file):
         )
         
         # Return a default model
-        if os.path.exists('bagging_model_tuned.pkl'):
-            model = joblib.load('bagging_model_tuned.pkl')
+        if os.path.exists(os.path.join(OUTPUT_DIRS['models'], 'bagging_model_tuned.pkl')):
+            model = joblib.load(os.path.join(OUTPUT_DIRS['models'], 'bagging_model_tuned.pkl'))
             return model, scaler
         
-        if os.path.exists('random_forest_model_tuned.pkl'):
-            model = joblib.load('random_forest_model_tuned.pkl')
+        if os.path.exists(os.path.join(OUTPUT_DIRS['models'], 'random_forest_model_tuned.pkl')):
+            model = joblib.load(os.path.join(OUTPUT_DIRS['models'], 'random_forest_model_tuned.pkl'))
             return model, scaler
         else:
             print("No saved model found. Training Random Forest model...")
@@ -244,7 +245,7 @@ def train_model(model_type, data_file):
             tuned_model, _ = random_forest.tune_random_forest(
                 X_train_scaled, y_train, X_test_scaled, y_test
             )
-            joblib.dump(tuned_model, 'random_forest_model_tuned.pkl')
+            joblib.dump(tuned_model, os.path.join(OUTPUT_DIRS['models'], 'random_forest_model_tuned.pkl'))
             return tuned_model, scaler
     
     elif model_type == 'correlation':
@@ -255,12 +256,12 @@ def train_model(model_type, data_file):
         )
         
         # Return Bagging or Random Forest model as default
-        if os.path.exists('bagging_model_tuned.pkl'):
-            model = joblib.load('bagging_model_tuned.pkl')
+        if os.path.exists(os.path.join(OUTPUT_DIRS['models'], 'bagging_model_tuned.pkl')):
+            model = joblib.load(os.path.join(OUTPUT_DIRS['models'], 'bagging_model_tuned.pkl'))
             return model, scaler
         
-        if os.path.exists('random_forest_model_tuned.pkl'):
-            model = joblib.load('random_forest_model_tuned.pkl')
+        if os.path.exists(os.path.join(OUTPUT_DIRS['models'], 'random_forest_model_tuned.pkl')):
+            model = joblib.load(os.path.join(OUTPUT_DIRS['models'], 'random_forest_model_tuned.pkl'))
             return model, scaler
         else:
             print("No saved model found for prediction. Training Random Forest model...")
@@ -270,7 +271,7 @@ def train_model(model_type, data_file):
             tuned_model, _ = random_forest.tune_random_forest(
                 X_train_scaled, y_train, X_test_scaled, y_test
             )
-            joblib.dump(tuned_model, 'random_forest_model_tuned.pkl')
+            joblib.dump(tuned_model, os.path.join(OUTPUT_DIRS['models'], 'random_forest_model_tuned.pkl'))
             return tuned_model, scaler
     
     # Default case
@@ -281,7 +282,7 @@ def train_model(model_type, data_file):
     tuned_model, _ = random_forest.tune_random_forest(
         X_train_scaled, y_train, X_test_scaled, y_test
     )
-    joblib.dump(tuned_model, 'random_forest_model_tuned.pkl')
+    joblib.dump(tuned_model, os.path.join(OUTPUT_DIRS['models'], 'random_forest_model_tuned.pkl'))
     return tuned_model, scaler
 
 def predict(model, scaler, args, model_type=None):
@@ -305,13 +306,13 @@ def predict(model, scaler, args, model_type=None):
             if np.isnan(prediction) or np.isinf(prediction):
                 print("Warning: GEP model produced an invalid prediction. Using fallback method.")
                 prediction = predict_strength(
-                    joblib.load('random_forest_model_tuned.pkl'), scaler,
+                    joblib.load(os.path.join(OUTPUT_DIRS['models'], 'random_forest_model_tuned.pkl')), scaler,
                     args.cement, args.pofa, args.ca_fa, args.w_b, args.sp, args.age
                 )
         except Exception as e:
             print(f"Error with GEP prediction: {e}. Using fallback method.")
             prediction = predict_strength(
-                joblib.load('random_forest_model_tuned.pkl'), scaler,
+                joblib.load(os.path.join(OUTPUT_DIRS['models'], 'random_forest_model_tuned.pkl')), scaler,
                 args.cement, args.pofa, args.ca_fa, args.w_b, args.sp, args.age
             )
     # For other scikit-learn models
@@ -343,33 +344,33 @@ def main():
         model_type = None
         
         if args.model == 'linear':
-            model_file = 'linear_regression_model.pkl'
+            model_file = os.path.join(OUTPUT_DIRS['models'], 'linear_regression_model.pkl')
             model_type = 'sklearn'
         elif args.model == 'rf':
-            model_file = 'random_forest_model_tuned.pkl'
+            model_file = os.path.join(OUTPUT_DIRS['models'], 'random_forest_model_tuned.pkl')
             model_type = 'sklearn'
         elif args.model == 'gb':
-            model_file = 'gradient_boosting_model_tuned.pkl'
+            model_file = os.path.join(OUTPUT_DIRS['models'], 'gradient_boosting_model_tuned.pkl')
             model_type = 'sklearn'
         elif args.model == 'svr':
-            model_file = 'svr_model_tuned.pkl'
+            model_file = os.path.join(OUTPUT_DIRS['models'], 'svr_model_tuned.pkl')
             model_type = 'sklearn'
         elif args.model == 'hybrid':
-            model_file = 'hybrid_model.pkl'
+            model_file = os.path.join(OUTPUT_DIRS['models'], 'hybrid_model.pkl')
             model_type = 'sklearn'
         elif args.model == 'bagging':
-            model_file = 'bagging_model_tuned.pkl'
+            model_file = os.path.join(OUTPUT_DIRS['models'], 'bagging_model_tuned.pkl')
             model_type = 'sklearn'
         elif args.model == 'gep':
-            model_file = 'gep_model.pkl'
+            model_file = os.path.join(OUTPUT_DIRS['models'], 'gep_model.pkl')
             model_type = 'gep'
         else:
             # Default to Bagging or Random Forest model
-            if os.path.exists('bagging_model_tuned.pkl'):
-                model_file = 'bagging_model_tuned.pkl'
+            if os.path.exists(os.path.join(OUTPUT_DIRS['models'], 'bagging_model_tuned.pkl')):
+                model_file = os.path.join(OUTPUT_DIRS['models'], 'bagging_model_tuned.pkl')
                 model_type = 'sklearn'
             else:
-                model_file = 'random_forest_model_tuned.pkl'
+                model_file = os.path.join(OUTPUT_DIRS['models'], 'random_forest_model_tuned.pkl')
                 model_type = 'sklearn'
         
         try:
@@ -381,7 +382,7 @@ def main():
                 model = joblib.load(model_file)
             
             # Load scaler
-            scaler = joblib.load('pofa_concrete_strength_scaler.pkl')
+            scaler = joblib.load(os.path.join(OUTPUT_DIRS['models'], 'pofa_concrete_strength_scaler.pkl'))
             
             # Make prediction
             predict(model, scaler, args, model_type)

@@ -6,6 +6,7 @@ implementation in Python. DEAP allows us to build genetic programming models tha
 similar principles to GEP.
 """
 
+import os
 import numpy as np
 import random
 import matplotlib.pyplot as plt
@@ -16,6 +17,7 @@ import math
 import warnings
 import sympy
 import pickle
+from utils import OUTPUT_DIRS
 
 # Filter warnings
 warnings.filterwarnings("ignore")
@@ -205,8 +207,10 @@ def setup_gep_toolbox(feature_names):
     cleaned_feature_names = clean_feature_names(feature_names)
     
     # Define fitness function (minimize MSE)
-    creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
-    creator.create("Individual", gp.PrimitiveTree, fitness=creator.FitnessMin)
+    if not hasattr(creator, 'FitnessMin'):
+        creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
+    if not hasattr(creator, 'Individual'):
+        creator.create("Individual", gp.PrimitiveTree, fitness=creator.FitnessMin)
     
     # Initialize toolbox
     toolbox = base.Toolbox()
@@ -294,10 +298,11 @@ def evaluate_gep_individual(individual, pset, X, y):
         # If compilation fails, return a large penalty
         return (1e6,)
 
-def train_gep(X_train, y_train, X_test, y_test, feature_names, pop_size=300, n_gen=50):
+def train_gep(X_train, y_train, X_test, y_test, feature_names,
+              pop_size=300, n_gen=50, cxpb=0.7, mutpb=0.3):
     """
     Train a GEP-like model using genetic programming.
-    
+
     Args:
         X_train: Training features
         y_train: Training target values
@@ -306,7 +311,9 @@ def train_gep(X_train, y_train, X_test, y_test, feature_names, pop_size=300, n_g
         feature_names: Names of input features
         pop_size: Population size
         n_gen: Number of generations
-        
+        cxpb: Crossover probability
+        mutpb: Mutation probability
+
     Returns:
         Best individual, evaluation results, and compiled function
     """
@@ -346,8 +353,8 @@ def train_gep(X_train, y_train, X_test, y_test, feature_names, pop_size=300, n_g
     print("\nStarting GEP training...")
     pop, log = algorithms.eaSimple(
         pop, toolbox,
-        cxpb=0.7,  # Crossover probability
-        mutpb=0.3,  # Mutation probability
+        cxpb=cxpb,
+        mutpb=mutpb,
         ngen=n_gen,
         stats=mstats,
         halloffame=hof,
@@ -415,15 +422,16 @@ def train_gep(X_train, y_train, X_test, y_test, feature_names, pop_size=300, n_g
     plt.xlabel('Actual Strength (MPa)')
     plt.ylabel('Predicted Strength (MPa)')
     plt.grid(True, alpha=0.3)
-    
+
     # Add R² annotation
     plt.annotate(f'R² = {r2:.4f}', xy=(0.05, 0.95), xycoords='axes fraction',
                 bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5))
-    
+
     plt.tight_layout()
-    plt.savefig('gep_actual_vs_predicted.png')
+    os.makedirs(OUTPUT_DIRS['actual_vs_predicted'], exist_ok=True)
+    plt.savefig(os.path.join(OUTPUT_DIRS['actual_vs_predicted'], 'gep_actual_vs_predicted.png'))
     plt.close()
-    
+
     # Plot fitness evolution
     gen = range(n_gen + 1)
     fit_mins = log.chapters['fitness'].select('min')
@@ -435,7 +443,8 @@ def train_gep(X_train, y_train, X_test, y_test, feature_names, pop_size=300, n_g
     plt.ylabel('Fitness (MSE)')
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
-    plt.savefig('gep_fitness_evolution.png')
+    os.makedirs(OUTPUT_DIRS['misc'], exist_ok=True)
+    plt.savefig(os.path.join(OUTPUT_DIRS['misc'], 'gep_fitness_evolution.png'))
     plt.close()
     
     # Convert the best individual to a sympy expression for readability
@@ -649,13 +658,14 @@ def tune_gep(X_train, y_train, X_test, y_test, feature_names):
     plt.xlabel('Actual Strength (MPa)')
     plt.ylabel('Predicted Strength (MPa)')
     plt.grid(True, alpha=0.3)
-    
+
     # Add R² annotation
     plt.annotate(f'R² = {best_results["r2"]:.4f}', xy=(0.05, 0.95), xycoords='axes fraction',
                 bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5))
-    
+
     plt.tight_layout()
-    plt.savefig('tuned_gep_actual_vs_predicted.png')
+    os.makedirs(OUTPUT_DIRS['actual_vs_predicted'], exist_ok=True)
+    plt.savefig(os.path.join(OUTPUT_DIRS['actual_vs_predicted'], 'tuned_gep_actual_vs_predicted.png'))
     plt.close()
     
     return best_individual, best_results, picklable_func

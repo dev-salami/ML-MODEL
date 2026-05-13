@@ -6,7 +6,8 @@ from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 import joblib
 
 from data_preprocessing import load_and_explore_data, preprocess_data
-from utils import predict_strength, save_model
+import os
+from utils import predict_strength, save_model, OUTPUT_DIRS
 
 def train_hybrid_model(X_train, y_train, X_test, y_test):
     """
@@ -73,7 +74,7 @@ def main():
     )
     
     # Save the hybrid model
-    save_model(hybrid_model, 'hybrid_model.pkl')
+    save_model(hybrid_model, os.path.join(OUTPUT_DIRS['models'], 'hybrid_model.pkl'))
     
     # Example prediction with hybrid model
     new_concrete = {

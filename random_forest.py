@@ -4,7 +4,8 @@ from sklearn.model_selection import GridSearchCV
 import joblib
 
 from data_preprocessing import load_and_explore_data, preprocess_data
-from utils import evaluate_model, predict_strength, save_model
+import os
+from utils import evaluate_model, predict_strength, save_model, OUTPUT_DIRS
 
 def train_random_forest(X_train, y_train, X_test, y_test):
     """
@@ -99,7 +100,7 @@ def main():
     )
     
     # Save the tuned model
-    save_model(tuned_rf_model, 'random_forest_model_tuned.pkl')
+    save_model(tuned_rf_model, os.path.join(OUTPUT_DIRS['models'], 'random_forest_model_tuned.pkl'))
     
     # Example prediction with tuned model
     new_concrete = {

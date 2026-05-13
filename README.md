@@ -99,3 +99,26 @@ strength = predict_strength(
 
 print(f"Predicted Compressive Strength: {strength:.2f} MPa")
 ```
+
+# Install optuna first
+
+pip install optuna
+
+# Quick test with RF only (20 trials)
+
+python run_v2.py --model rf --trials 20
+
+# Full run — all 9 models
+
+python run_v2.py --model all --trials 100
+python3 -m venv venv
+source venv/bin/activate
+
+# Install all dependencies (including optuna)
+
+pip install --upgrade pip
+pip install -r requirements.txt
+pip install optuna
+Then run:
+
+python run_v2.py --model rf --trials 20

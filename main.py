@@ -4,7 +4,7 @@ import os
 import numpy as np
 
 from data_preprocessing import load_and_explore_data, preprocess_data
-from utils import predict_strength
+from utils import predict_strength, OUTPUT_DIRS
 
 # Import individual model modules
 import linear_regression
@@ -57,13 +57,14 @@ def train_model(model_type, data_file):
     X_train_scaled, X_test_scaled, y_train, y_test, scaler, feature_names = preprocess_data(df)
     
     # Save the scaler for future use
-    joblib.dump(scaler, 'pofa_concrete_strength_scaler.pkl')
+    os.makedirs(OUTPUT_DIRS['models'], exist_ok=True)
+    joblib.dump(scaler, os.path.join(OUTPUT_DIRS['models'], 'pofa_concrete_strength_scaler.pkl'))
     
     if model_type == 'linear':
         model, _ = linear_regression.train_linear_regression(
             X_train_scaled, y_train, X_test_scaled, y_test
         )
-        joblib.dump(model, 'linear_regression_model.pkl')
+        joblib.dump(model, os.path.join(OUTPUT_DIRS['models'], 'linear_regression_model.pkl'))
         return model, scaler
         
     elif model_type == 'rf':
@@ -73,7 +74,7 @@ def train_model(model_type, data_file):
         tuned_model, _ = random_forest.tune_random_forest(
             X_train_scaled, y_train, X_test_scaled, y_test
         )
-        joblib.dump(tuned_model, 'random_forest_model_tuned.pkl')
+        joblib.dump(tuned_model, os.path.join(OUTPUT_DIRS['models'], 'random_forest_model_tuned.pkl'))
         return tuned_model, scaler
         
     elif model_type == 'gb':
@@ -83,7 +84,7 @@ def train_model(model_type, data_file):
         tuned_model, _ = gradient_boosting.tune_gradient_boosting(
             X_train_scaled, y_train, X_test_scaled, y_test
         )
-        joblib.dump(tuned_model, 'gradient_boosting_model_tuned.pkl')
+        joblib.dump(tuned_model, os.path.join(OUTPUT_DIRS['models'], 'gradient_boosting_model_tuned.pkl'))
         return tuned_model, scaler
         
     elif model_type == 'svr':
@@ -93,14 +94,14 @@ def train_model(model_type, data_file):
         tuned_model, _ = svr.tune_svr(
             X_train_scaled, y_train, X_test_scaled, y_test
         )
-        joblib.dump(tuned_model, 'svr_model_tuned.pkl')
+        joblib.dump(tuned_model, os.path.join(OUTPUT_DIRS['models'], 'svr_model_tuned.pkl'))
         return tuned_model, scaler
         
     elif model_type == 'hybrid':
         model, _ = hybrid_model.train_hybrid_model(
             X_train_scaled, y_train, X_test_scaled, y_test
         )
-        joblib.dump(model, 'hybrid_model.pkl')
+        joblib.dump(model, os.path.join(OUTPUT_DIRS['models'], 'hybrid_model.pkl'))
         return model, scaler
         
     elif model_type == 'all':
@@ -108,7 +109,7 @@ def train_model(model_type, data_file):
         linear_model, _ = linear_regression.train_linear_regression(
             X_train_scaled, y_train, X_test_scaled, y_test
         )
-        joblib.dump(linear_model, 'linear_regression_model.pkl')
+        joblib.dump(linear_model, os.path.join(OUTPUT_DIRS['models'], 'linear_regression_model.pkl'))
         
         rf_model, _ = random_forest.train_random_forest(
             X_train_scaled, y_train, X_test_scaled, y_test
@@ -116,7 +117,7 @@ def train_model(model_type, data_file):
         tuned_rf_model, _ = random_forest.tune_random_forest(
             X_train_scaled, y_train, X_test_scaled, y_test
         )
-        joblib.dump(tuned_rf_model, 'random_forest_model_tuned.pkl')
+        joblib.dump(tuned_rf_model, os.path.join(OUTPUT_DIRS['models'], 'random_forest_model_tuned.pkl'))
         
         gb_model, _ = gradient_boosting.train_gradient_boosting(
             X_train_scaled, y_train, X_test_scaled, y_test
@@ -124,7 +125,7 @@ def train_model(model_type, data_file):
         tuned_gb_model, _ = gradient_boosting.tune_gradient_boosting(
             X_train_scaled, y_train, X_test_scaled, y_test
         )
-        joblib.dump(tuned_gb_model, 'gradient_boosting_model_tuned.pkl')
+        joblib.dump(tuned_gb_model, os.path.join(OUTPUT_DIRS['models'], 'gradient_boosting_model_tuned.pkl'))
         
         svr_model, _ = svr.train_svr(
             X_train_scaled, y_train, X_test_scaled, y_test
@@ -132,12 +133,12 @@ def train_model(model_type, data_file):
         tuned_svr_model, _ = svr.tune_svr(
             X_train_scaled, y_train, X_test_scaled, y_test
         )
-        joblib.dump(tuned_svr_model, 'svr_model_tuned.pkl')
+        joblib.dump(tuned_svr_model, os.path.join(OUTPUT_DIRS['models'], 'svr_model_tuned.pkl'))
         
         hybrid_model_trained, _ = hybrid_model.train_hybrid_model(
             X_train_scaled, y_train, X_test_scaled, y_test
         )
-        joblib.dump(hybrid_model_trained, 'hybrid_model.pkl')
+        joblib.dump(hybrid_model_trained, os.path.join(OUTPUT_DIRS['models'], 'hybrid_model.pkl'))
         
         # Return the tuned Random Forest model as default
         return tuned_rf_model, scaler
@@ -146,8 +147,8 @@ def train_model(model_type, data_file):
         # Compare all models and return
         model_comparison.compare_all_models()
         # Load the best model (assuming it's the tuned Random Forest for simplicity)
-        if os.path.exists('random_forest_model_tuned.pkl'):
-            model = joblib.load('random_forest_model_tuned.pkl')
+        if os.path.exists(os.path.join(OUTPUT_DIRS['models'], 'random_forest_model_tuned.pkl')):
+            model = joblib.load(os.path.join(OUTPUT_DIRS['models'], 'random_forest_model_tuned.pkl'))
             return model, scaler
         else:
             print("No saved model found. Training Random Forest model...")
@@ -157,7 +158,7 @@ def train_model(model_type, data_file):
             tuned_model, _ = random_forest.tune_random_forest(
                 X_train_scaled, y_train, X_test_scaled, y_test
             )
-            joblib.dump(tuned_model, 'random_forest_model_tuned.pkl')
+            joblib.dump(tuned_model, os.path.join(OUTPUT_DIRS['models'], 'random_forest_model_tuned.pkl'))
             return tuned_model, scaler
     
     # Default case
@@ -168,7 +169,7 @@ def train_model(model_type, data_file):
     tuned_model, _ = random_forest.tune_random_forest(
         X_train_scaled, y_train, X_test_scaled, y_test
     )
-    joblib.dump(tuned_model, 'random_forest_model_tuned.pkl')
+    joblib.dump(tuned_model, os.path.join(OUTPUT_DIRS['models'], 'random_forest_model_tuned.pkl'))
     return tuned_model, scaler
 
 def predict(model, scaler, args):
@@ -200,22 +201,22 @@ def main():
         # Load the model and scaler for prediction
         model_file = None
         if args.model == 'linear':
-            model_file = 'linear_regression_model.pkl'
+            model_file = os.path.join(OUTPUT_DIRS['models'], 'linear_regression_model.pkl')
         elif args.model == 'rf':
-            model_file = 'random_forest_model_tuned.pkl'
+            model_file = os.path.join(OUTPUT_DIRS['models'], 'random_forest_model_tuned.pkl')
         elif args.model == 'gb':
-            model_file = 'gradient_boosting_model_tuned.pkl'
+            model_file = os.path.join(OUTPUT_DIRS['models'], 'gradient_boosting_model_tuned.pkl')
         elif args.model == 'svr':
-            model_file = 'svr_model_tuned.pkl'
+            model_file = os.path.join(OUTPUT_DIRS['models'], 'svr_model_tuned.pkl')
         elif args.model == 'hybrid':
-            model_file = 'hybrid_model.pkl'
+            model_file = os.path.join(OUTPUT_DIRS['models'], 'hybrid_model.pkl')
         else:
             # Default to Random Forest model
-            model_file = 'random_forest_model_tuned.pkl'
+            model_file = os.path.join(OUTPUT_DIRS['models'], 'random_forest_model_tuned.pkl')
         
         try:
             model = joblib.load(model_file)
-            scaler = joblib.load('pofa_concrete_strength_scaler.pkl')
+            scaler = joblib.load(os.path.join(OUTPUT_DIRS['models'], 'pofa_concrete_strength_scaler.pkl'))
             predict(model, scaler, args)
         except FileNotFoundError:
             print(f"Model file {model_file} not found. Please train the model first.")
