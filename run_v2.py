@@ -152,6 +152,25 @@ def run_model(model_key, X_train, y_train, X_test, y_test, feature_names,
 
     save_optuna_history(study, model_key, dirs)
 
+    # ---- Explainability: PDP + SHAP beeswarm ----
+    from explainability import plot_pdp, plot_shap_beeswarm
+
+    try:
+        os.makedirs(dirs['pdp'], exist_ok=True)
+        pdp_path = os.path.join(dirs['pdp'], f'{model_key}_pdp.png')
+        plot_pdp(model, model_key, MODEL_NAMES[model_key],
+                 X_test, feature_names, pdp_path)
+    except Exception as e:
+        print(f"  PDP failed for {model_key}: {e}")
+
+    try:
+        os.makedirs(dirs['shap'], exist_ok=True)
+        shap_path = os.path.join(dirs['shap'], f'{model_key}_shap.png')
+        plot_shap_beeswarm(model, model_key, MODEL_NAMES[model_key],
+                           X_train, X_test, feature_names, shap_path)
+    except Exception as e:
+        print(f"  SHAP failed for {model_key}: {e}")
+
     return {
         'model':       model_key,
         'name':        MODEL_NAMES[model_key],
@@ -213,7 +232,27 @@ def main():
 
     dirs = get_output_dirs('v2')
 
-    models_to_run = ALL_MODELS if args.model == 'all' else [args.model]
+    # Persist the scaler so the GUI (and any downstream tool) can transform new inputs.
+    os.makedirs(dirs['models'], exist_ok=True)
+    joblib.dump(scaler, os.path.join(dirs['models'], 'pofa_concrete_strength_scaler.pkl'))
+
+    # Drop MARS from the default 'all' set if pyearth isn't installed.
+    # Users can still explicitly opt-in via `--model mars` and get a clean error.
+    pyearth_available = True
+    try:
+        import pyearth  # noqa: F401
+    except ImportError:
+        pyearth_available = False
+
+    if args.model == 'all':
+        models_to_run = [m for m in ALL_MODELS
+                         if m != 'mars' or pyearth_available]
+        if not pyearth_available and 'mars' in ALL_MODELS:
+            print("Note: pyearth not installed — skipping MARS. "
+                  "Install with `pip install sklearn-contrib-py-earth` "
+                  "to enable it (or use --model mars to force).")
+    else:
+        models_to_run = [args.model]
 
     print(f"\nModels to tune: {models_to_run}")
     print(f"Max trials per model: {args.trials}")
@@ -227,6 +266,19 @@ def main():
                 dirs, n_trials=args.trials, r2_target=args.target
             )
             results.append(result)
+        except ImportError as e:
+            # Missing optional dep (e.g. pyearth) — clean one-liner, no traceback
+            print(f"\nSkipping {key}: {e}")
+            results.append({
+                'model':      key,
+                'name':       MODEL_NAMES.get(key, key),
+                'r2':         float('nan'),
+                'rmse':       float('nan'),
+                'mae':        float('nan'),
+                'target_met': False,
+                'best_params': {},
+                'y_pred':     None,
+            })
         except Exception as e:
             print(f"\nERROR tuning {key}: {e}")
             traceback.print_exc()

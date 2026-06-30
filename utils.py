@@ -9,6 +9,7 @@ BASE_OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'out', 'v1')
 OUTPUT_DIRS = {
     'actual_vs_predicted': os.path.join(BASE_OUT, 'actual_vs_predicted'),
     'shap':                os.path.join(BASE_OUT, 'shap'),
+    'pdp':                 os.path.join(BASE_OUT, 'pdp'),
     'feature_importance':  os.path.join(BASE_OUT, 'feature_importance'),
     'correlation':         os.path.join(BASE_OUT, 'correlation'),
     'training_loss':       os.path.join(BASE_OUT, 'training_loss'),
@@ -26,6 +27,7 @@ def get_output_dirs(version='v1'):
     return {
         'actual_vs_predicted': os.path.join(base, 'actual_vs_predicted'),
         'shap':                os.path.join(base, 'shap'),
+        'pdp':                 os.path.join(base, 'pdp'),
         'feature_importance':  os.path.join(base, 'feature_importance'),
         'correlation':         os.path.join(base, 'correlation'),
         'training_loss':       os.path.join(base, 'training_loss'),
