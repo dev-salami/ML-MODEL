@@ -92,16 +92,17 @@ def predict_strength(model, scaler, cement, pofa, ca_fa, w_b, sp, age):
     --------
     float: Predicted compressive strength (MPa)
     """
-    # Check how many features the scaler expects
     n_features = scaler.n_features_in_ if hasattr(scaler, 'n_features_in_') else None
-    
-    if n_features and n_features == 7:
-        # The scaler was trained with 7 features (including concrete_strength as a dummy)
-        # Add a dummy value (0) for the concrete_strength parameter
-        input_data = np.array([[cement, pofa, ca_fa, w_b, sp, age, 25]])
+
+    features = [cement, pofa, ca_fa, w_b, sp, age]
+
+    if n_features == 7:
+        # Legacy scalers were fit with the DataPoint id as the leading column
+        # ([DataPoint, C, POFA, CA/FA, W/B, SP, Age]). Prepend a neutral id so the
+        # six real inputs still line up with the columns the scaler expects.
+        input_data = np.array([[201] + features])
     else:
-        # Standard case with 6 features
-        input_data = np.array([[cement, pofa, ca_fa, w_b, sp, age]])
+        input_data = np.array([features])
     
     # Scale the input data
     scaled_input = scaler.transform(input_data)
