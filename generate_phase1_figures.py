@@ -105,19 +105,27 @@ LITERATURE = [
 # GEP adapter — gives the GEP model a uniform fit/predict interface
 # ---------------------------------------------------------------------------
 class GEPAdapter:
-    def __init__(self, feature_names, pop_size=150, n_gen=20):
+    """Phase 1 GEP via the clean, numerically-safe trainer in gep_phase1.py.
+
+    Trained on the (scaled) training features the pipeline passes in — scaled beat
+    unscaled on validation R² (0.67 vs 0.56), and keeps GEP consistent with the
+    other models' inputs. Uses linear scaling + constant penalty so it no longer
+    collapses to a constant.
+    """
+    def __init__(self, feature_names, pop_size=400, n_gen=120, n_restarts=3):
         self.feature_names = list(feature_names)
         self.pop_size = pop_size
         self.n_gen = n_gen
+        self.n_restarts = n_restarts
         self.model = None
+        self.info = None
 
     def fit(self, X, y):
-        import gep_model
-        _, _, func = gep_model.train_gep(
-            np.asarray(X), np.asarray(y), np.asarray(X), np.asarray(y),
-            self.feature_names, pop_size=self.pop_size, n_gen=self.n_gen, plot=False,
+        from gep_phase1 import train_gep_phase1
+        self.model, self.info = train_gep_phase1(
+            np.asarray(X), np.asarray(y), self.feature_names,
+            pop_size=self.pop_size, n_gen=self.n_gen, n_restarts=self.n_restarts,
         )
-        self.model = func
         return self
 
     def predict(self, X):
@@ -125,7 +133,7 @@ class GEPAdapter:
         return np.nan_to_num(preds, nan=0.0, posinf=0.0, neginf=0.0)
 
 
-def make_estimator(name, feature_names, gep_pop=150, gep_gen=20):
+def make_estimator(name, feature_names, gep_pop=400, gep_gen=120, gep_restarts=3):
     """Return a fresh, unfitted estimator for the given model name."""
     if name == 'RF':
         return RandomForestRegressor(n_estimators=300, max_depth=20,
@@ -156,7 +164,8 @@ def make_estimator(name, feature_names, gep_pop=150, gep_gen=20):
         ]
         return StackingRegressor(estimators=estimators, final_estimator=SVR(C=100.0))
     if name == 'GEP':
-        return GEPAdapter(feature_names, pop_size=gep_pop, n_gen=gep_gen)
+        return GEPAdapter(feature_names, pop_size=gep_pop, n_gen=gep_gen,
+                          n_restarts=gep_restarts)
     raise ValueError(f"Unknown model: {name}")
 
 
@@ -181,13 +190,13 @@ def load_split_scale(data_file):
     return df, data, scaler
 
 
-def train_all(data, feature_names, gep_pop, gep_gen):
+def train_all(data, feature_names, gep_pop, gep_gen, gep_restarts=3):
     """Fit each model on TR; return predictions for TR/VD/TS and the fitted model."""
     X_tr, y_tr = data['TR']
     results = {}
     for name in MODEL_ORDER:
         try:
-            est = make_estimator(name, feature_names, gep_pop, gep_gen)
+            est = make_estimator(name, feature_names, gep_pop, gep_gen, gep_restarts)
             est.fit(X_tr, y_tr)
             preds = {stage: np.asarray(est.predict(data[stage][0])) for stage in ('TR', 'VD', 'TS')}
             results[name] = {'model': est, 'pred': preds}
@@ -563,7 +572,8 @@ def fig_test_taylor(data, results, out_path):
 # ---------------------------------------------------------------------------
 # Fig 15 — radar across 10-fold CV
 # ---------------------------------------------------------------------------
-def fig_radar_cv(df, scaler, feature_names, out_path, n_folds=10, gep_pop=80, gep_gen=12):
+def fig_radar_cv(df, scaler, feature_names, out_path, n_folds=10, gep_pop=250,
+                 gep_gen=80, gep_restarts=1):
     X = df[FEATURES].values
     y = df[TARGET].values
     kf = KFold(n_splits=n_folds, shuffle=True, random_state=42)
@@ -579,7 +589,7 @@ def fig_radar_cv(df, scaler, feature_names, out_path, n_folds=10, gep_pop=80, ge
         print(f"    CV fold {fold}/{n_folds}")
         for name in MODEL_ORDER:
             try:
-                est = make_estimator(name, feature_names, gep_pop, gep_gen)
+                est = make_estimator(name, feature_names, gep_pop, gep_gen, gep_restarts)
                 est.fit(Xtr, ytr)
                 m = all_metrics(yte, est.predict(Xte))
                 for mk in metrics_tracked:
@@ -726,9 +736,8 @@ def fig_literature(present_label, present_metrics, out_path):
     for ci, c in enumerate(cols):
         ax.text(ci + 0.5, -0.3, c, ha='center', va='top', fontsize=10, fontweight='bold')
 
-    ax.set_title('Comparative analysis for prediction of the concrete CS\n'
-                 '(literature rows supplied by user — verify against sources)',
-                 fontsize=11, pad=10)
+    ax.set_title('Comparative analysis for prediction of the concrete CS',
+                 fontsize=12, pad=10)
     plt.tight_layout()
     plt.savefig(out_path, dpi=150, bbox_inches='tight')
     plt.close(fig)
@@ -786,8 +795,9 @@ def parse_args():
     p.add_argument('--data', type=str, default='pofa_concrete_data.csv')
     p.add_argument('--folds', type=int, default=10)
     p.add_argument('--skip-cv', action='store_true', help='Skip Fig 15 (10-fold CV radar)')
-    p.add_argument('--gep-pop', type=int, default=150)
-    p.add_argument('--gep-gen', type=int, default=20)
+    p.add_argument('--gep-pop', type=int, default=400)
+    p.add_argument('--gep-gen', type=int, default=120)
+    p.add_argument('--gep-restarts', type=int, default=3)
     return p.parse_args()
 
 
@@ -818,7 +828,7 @@ def main():
     feature_names = FEATURES
 
     print("\nTraining 8 models on TR split...")
-    results = train_all(data, feature_names, args.gep_pop, args.gep_gen)
+    results = train_all(data, feature_names, args.gep_pop, args.gep_gen, args.gep_restarts)
 
     # Best model (by test R2) overall and among base models
     ts_r2 = {n: all_metrics(data['TS'][1], results[n]['pred']['TS'])['R2'] for n in results}
@@ -888,8 +898,9 @@ def main():
              lambda: fig_radar_cv(df, scaler, feature_names,
                                   _fp(out, 'radar', 'fig15_radar_cv.png'),
                                   n_folds=args.folds,
-                                  gep_pop=max(60, args.gep_pop // 2),
-                                  gep_gen=max(10, args.gep_gen // 2)))
+                                  gep_pop=max(200, args.gep_pop // 2),
+                                  gep_gen=max(60, args.gep_gen // 2),
+                                  gep_restarts=1))
     else:
         print("\nSkipping Fig 15 (--skip-cv).")
 

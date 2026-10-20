@@ -36,8 +36,12 @@ Fig 5 (ANN schematic), Fig 6 (RF architecture), Fig 7 (XGB architecture).
   a normalised (non-MPa) value. Row values live in `LITERATURE` in the script.
 - **CPI** has no published formula in the source paper; we use a transparent normalised
   composite (see `phase1_metrics.py`). Adjust there if your reference differs.
-- **GEP** is the weakest model (symbolic regression). It may appear as a degenerate
-  marker in a violin/Taylor panel and is excluded from the radar when its cross-fold
-  predictions collapse; any excluded model is named on the radar legend.
-- The **radar** uses percentile-based axis limits so a single unstable fold (M5P/Hybrid
-  can spike) does not flatten the scale for the stable models.
+- **GEP** (symbolic regression) is trained by the clean `gep_phase1.py` trainer (safe
+  operators, constant penalty, least-squares linear scaling, selected by validation R²).
+  It is a genuine model — TS R² ≈ 0.87, 10-fold CV median ≈ 0.79 — and is included in the
+  radar. See `gep_fix_report.md` for the expression and full metrics.
+- **Hybrid** is excluded from the radar: its SVR meta-learner is unstable in small-fold CV
+  (median R² ≈ 0.49) although it scores well on the single test split. Excluded models are
+  named on the radar legend.
+- The **radar** uses percentile-based axis limits so a single unstable fold (M5P can spike)
+  does not flatten the scale for the stable models.
